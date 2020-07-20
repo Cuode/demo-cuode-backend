@@ -1,5 +1,6 @@
 # CUODE
-
+<br>
+Cuode is an randomly picking Quote API, wich also offers First and Lastnames and also random generated Sentences.
 <br>
 
 ## Origin of the Name from the project:
