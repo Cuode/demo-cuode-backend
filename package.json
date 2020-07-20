@@ -1,0 +1,17 @@
+{
+  "name": "cuode",
+  "version": "1.0.0",
+  "description": "random Quotes, Sentences, First- and Lastnames",
+  "main": "server.js",
+  "scripts": {
+    "test": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "author": "remadisson",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "monk": "^7.3.0"
+  }
+}
