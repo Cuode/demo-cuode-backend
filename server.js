@@ -1,21 +1,14 @@
 /**
- * This is a demo Project to prepare for the real cuode project!
+ * This is a demo Project to prepare for the real Cuode project!
  * Author: remadisson
- * Bocholt, Germany - 20.07.2020
+ * Created in, at: Bocholt, Germany - Mon, 20.07.2020
  */
 
 const express = require('express');
-const monk = require('monk');
 const cors = require('cors');
 const app = express();
-
-//Registration for Databases:
-const database = monk('localhost/cuode-demo');
-const users = database.get('users');
-const quotes = database.get('quotes');
-const firstnames = database.get('firstnames');
-const lastnamse = database.get('lastnames');
-const sentencse = database.get('sentences');
+const random = require('./manager/random');
+const database = require('./manager/db');
 
 //Improvement for Usage
 app.use(cors()); //Makes requests available
@@ -27,7 +20,7 @@ app.get("/", (req, res) => {
     res.json({
         status: 400,
         message: "Bad Request",
-        note: "/ is not defined for useage"
+        note: "/ is not defined for usage"
     })
 })
 
@@ -35,4 +28,5 @@ app.get("/", (req, res) => {
 //Makes this whole shit available
 app.listen(7810, () => {
     console.log("Demo-Backend Started - Wating for requests...");
+    database.init();
 })
