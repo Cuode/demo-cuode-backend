@@ -1,2 +1,5 @@
 # Prevents unnecessary storage loss.
 node_modules/
+
+# Prevents unwanted actions, caused by lack of security.
+random.js

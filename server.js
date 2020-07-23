@@ -9,10 +9,14 @@ const cors = require('cors');
 const app = express();
 const random = require('./manager/random');
 const database = require('./manager/db');
+const input = require('./manager/input');
+const chalk = require('chalk');
 
 //Improvement for Usage
 app.use(cors()); //Makes requests available
-app.use(express.json()) //Allow the use of json for communication
+app.use(express.json()) //Allows the use of json for communication
+database.init();
+input.init(); //Registers local input listener
 
 
 //Incoming requests and their treatment
@@ -27,6 +31,5 @@ app.get("/", (req, res) => {
 
 //Makes this whole shit available
 app.listen(7810, () => {
-    console.log("Demo-Backend Started - Wating for requests...");
-    database.init();
+    console.log(chalk.yellowBright("Demo-Backend Started - Wating for requests..."));
 })

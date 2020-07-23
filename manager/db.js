@@ -34,16 +34,30 @@ module.exports.init = function(){
 
 module.exports.user = {
     
-    getUserByID: (id) => {
-         return users.findOne({id: id}).then(callback => callback);
+    /**
+     * Returns the UserData if exsists.
+     */
+
+    getUserByID: async(id) => {
+         return await users.findOne({id: id}).then(callback => callback);
     },
     
-    addUser: (User) => {
-        const pre_user = User;
-        if(pre_user.id.toString().toLowerCase().trim() === '' || pre_user.id.toString().toLowerCase() === null || pre_user.id.toString().toLowerCase() === undefined){
-            return false;
-        }
+    /**
+     * Returns the UserData if exists.
+     */
 
+    getUserByEmail: async(email) => {
+        return await users.findOne({email: email}).then(callback => callback);
+    },
+
+    /**
+     * Returns true?false when the action was successful or not. Inserts a new User.
+     */
+
+    addUser: async(User) => {
+        const pre_user = User;
+        
+        // Checking for empty input
         if(pre_user.name.toString().toLowerCase().trim() === '' || pre_user.name.toString().toLowerCase() === null || pre_user.name.toString().toLowerCase() === undefined){
             return false;
         }
@@ -52,8 +66,9 @@ module.exports.user = {
             return false;
         }
 
+        // Creating the UserInstance
         const user = {
-            id: pre_user.id,
+            id: random.toHash(pre_user.email),
             email: pre_user.email,
             name: pre_user.name,
             authentication: random.token(),
@@ -62,27 +77,38 @@ module.exports.user = {
                 firstnames: [],
                 lastnames: [],
                 sentences: []
-            }
+            },
+            createdAt: new Date()
         }
 
-        return users.insert(user).then(callback => {
+        // Inserting the UserInstance into the Database.
+        return await users.insert(user).then(callback => {
             return callback;
         });
 
     },
     
-    deleteUser: (userid) => {
+    /**
+     * Returns true?false when the action was successful or not. Deletes an exsisting User
+     */
+
+    deleteUser: async(userid) => {
+        
+        //Checking for empty input.
         if(userid.toString().toLowerCase().trim() === '' || userid.toString().toLowerCase().trim() === null || userid.toString().toLowerCase().trim() === undefined){
             return false;
         }
 
-        const User = getUserByID(userid);
+        // Getting the Users data
+        const User = await this.user.getUserByID(userid);
         
+        // Checking if the Users exists or not.
         if(User === null){
             return false;
         }
 
-        return users.remove({id: User.id}).then(callback => {
+        // Deleting the User from the database.
+        return await users.remove({id: User.id}).then(callback => {
             return true;
         }).catch(function(err){
             console.log(err);
@@ -92,7 +118,7 @@ module.exports.user = {
     },
     
     listUsers: () => {
-        return users.find();
+        return users.find({});
     },
 
     updateUser: (userid, User) => {
@@ -108,8 +134,8 @@ module.exports.user = {
         
     },
 
-    User: (id, name, email) => {
-        return {id: id, name: name, email: email};
+    User: (name, email) => {
+        return {name: name, email: email};
     }
 }
 
