@@ -15,8 +15,7 @@ const chalk = require('chalk');
 //Improvement for Usage
 app.use(cors()); //Makes requests available
 app.use(express.json()) //Allows the use of json for communication
-database.init();
-input.init(); //Registers local input listener
+
 
 
 //Incoming requests and their treatment
@@ -28,8 +27,13 @@ app.get("/", (req, res) => {
     })
 })
 
+app.post('/mobile_app/authenticate', (req, res) => {
+    
+})
 
 //Makes this whole shit available
 app.listen(7810, () => {
     console.log(chalk.yellowBright("Demo-Backend Started - Wating for requests..."));
+    database.init();
+    input.init();
 })

@@ -1,88 +1,44 @@
-const inquirer = require('inquirer');
+const readline = require('readline');
+const chalk = require('chalk');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+});
 
 module.exports.user = {
-    insertUser: () => {
-        const questions = [
-            {
-                name: "email",
-                input: "text",
-                mesasge: "Please enter the email, to recieve the credentials:",
-                validate: function (value){
-                    if(value.length){
-                        return true;
-                    } else {
-                        return "Please enter the email, to recieve the credentials:";
-                    }
-                }
-            },
-            {
-                name: "name",   
-                input: "text",
-                message: "Please enter the name, so we can greet the account: ",
-                validate: function(value){
-                    if(value.length) {
-                        return true;
-                    } else {
-                        return "Please enter the name, so we can greet the account: ";
-                    }
-                }
-            }
-        ];
-        return inquirer.prompt(questions).then(callback => callback);
+    insertUser: async() => {
+        let user = {};
+            await new Promise((resolve, reject) => {
+                rl.question(chalk.yellow(">> Please enter the email: "), (callback) =>{
+                    user.email = callback;
+                    resolve();
+                });
+            });
+
+            await new Promise((resolve, reject) => {
+                rl.question(chalk.yellow(">> Please enter the name: "), callback => {
+                    user.name = callback;
+                    resolve();
+                });
+            });
+
+        return user;
     },
 
-    removeUser: () => {
-        const questions = [
-            {
-                name: "email",
-                type: "text",
-                message: "Please enter the EMAIL of the user, you want to delete: ",
-                validate: function(value){
-                    if(value.length){
-                        return true;
-                    } else {
-                        return "Please enter the EMAIL of the user, you want to delete: ";
-                    }
-                }
-            }
-        ];
-        return inquirer.prompt(questions).then(callback => callback);
-    },
+    removeUser: async() => {
+        let email = undefined;
+        
+        await new Promise((resolve, reject) => {
+            rl.question(chalk.yellow(">> Please enter the email of the account you want to delete: "), (callback) => {
+                email = callback;
+                resolve();
+            });
+        });
 
-    getUserByID: () => {
-        const questions = [
-            {
-                name: "id",
-                type: "text",
-                message: "Please enter the ID of the User you want to get: ",
-                validate: function(value){
-                    if(value.length){
-                        return true;
-                    } else {
-                        return "Please enter the ID of the User you want to get: ";
-                    }
-                }
-            }
-        ]
-        return inquirer.prompt(questions);
-    },
+        return email;
 
-    getUserByMail: () => {
-        const questions = [
-            {
-                name: "email",
-                type: "text",
-                message: "Please enter the EMAIL of the User you want to get: ",
-                validate: function(value){
-                    if(value.length){
-                        return true;
-                    } else {
-                        return "Please enter the EMAIL of the User you want to get: ";
-                    }
-                }
-            }
-        ]
-        return inquirer.prompt(questions);
     }
 } 
 

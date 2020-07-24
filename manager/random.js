@@ -1,4 +1,10 @@
 /**
+ * This is a demo Project to prepare for the real Cuode project!
+ * Author: remadisson
+ * Created in, at: Bocholt, Germany - Mon, 20.07.2020
+ */
+
+/**
  * Generates a random token, to authenticate mobile devices.
  * @param {*} length 
  */
@@ -19,12 +25,14 @@ function makeid(length) {
  */
 
 function toHash(str){
-    let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash += Math.pow(str.charCodeAt(i) * 31, str.length - i);
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        return Math.abs(hash);
+    var hash = 0, i, chr, len;
+    if (str.length === 0) return hash;
+    for (i = 0, len = str.length; i < len; i++) {
+         chr   = str.charCodeAt(i);
+         hash  = ((hash << 5) - hash) + chr;
+         hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
 }
 
 /**

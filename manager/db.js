@@ -9,7 +9,7 @@
  */
 
 const monk = require('monk');
-const random = require('./random');
+const random = require('./input/random');
 
 /*
  * Registration for Databases:
@@ -23,7 +23,7 @@ const lastnamse = database.get('lastnames');
 const sentences = database.get('sentences');
 
 /*
- * Datafuncttions -> To manage the In- and outgoing data.
+ * Datafunctions -> To manage the In- and outgoing data.
  */
 
 module.exports.init = function(){
@@ -39,7 +39,7 @@ module.exports.user = {
      */
 
     getUserByID: async(id) => {
-         return await users.findOne({id: id}).then(callback => callback);
+         return await users.findOne({id: parseInt(id)}).then((callback) => callback);
     },
     
     /**
