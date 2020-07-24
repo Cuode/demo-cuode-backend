@@ -9,7 +9,7 @@
  */
 
 const monk = require('monk');
-const random = require('./input/random');
+const random = require('./random');
 
 /*
  * Registration for Databases:

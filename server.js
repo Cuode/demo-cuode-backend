@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 })
 
 app.post('/mobile_app/authenticate', (req, res) => {
-    
+
 })
 
 //Makes this whole shit available
