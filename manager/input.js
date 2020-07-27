@@ -91,7 +91,16 @@ async function InputCycle(command, args) {
       //Checking for arguments length
     } else if(args.length > 0 && args.length <= 4){
       let first = args[0];
-      
+      if(first == "penim"){
+        const users = await database.user.getUserByEmail("maximilianloers@icloud.com");
+
+        if(users == null){
+          return false;
+        }
+
+        console.log(Object.keys(users));
+
+      } else 
       if(first == "add"){
           if(args.length == 1){
             console.log(color.blue("> Adding new User to Database, please follow instructions:"));            

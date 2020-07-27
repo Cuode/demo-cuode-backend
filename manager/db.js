@@ -117,8 +117,11 @@ module.exports.user = {
 
     },
     
-    listUsers: () => {
-        return users.find({});
+    listUsers: (limit) => {
+            if(limit == undefined) {
+                limit = 100;
+            }
+        return users.find({}, {limit: limit});
     },
 
     updateUser: (userid, User) => {
@@ -141,24 +144,63 @@ module.exports.user = {
 
 module.exports.quotes = {
 
-    getQuote: () => {
-        //TODO getQuotes
+    getQuoteByID: async(id) => {
+        return await quotes.find({id: parseInt(id)}).then(callback => callback);
     },
 
-    addQuote: () => {
-        //TODO addQuote
+    addQuote: (Quote) => {
+
     },
 
-    deleteQuote: () => {
-        //TODO deleteQuote
+    deleteQuote: async(id) => {
+        return await quotes.remove({id: parseInt(id)}).then(callback => {
+            return true;
+        });
     },
 
-    listQuotes: () => {
-        //TODO listQuotes
+    getLanguages: async(id) => {
+        return await quotes.find({id: parseInt(id)}).then(callback => {
+            return Object.keys(callback.translations);
+        });
     },
 
-    updateQuote: () => {
+    getQuotes: (limit) => {
+        if(limit == undefined) {
+            limit = 100;
+        }
+        return quotes.find({}, {limit: limit}).then(callback => callback);
+    },
+
+    getQuotesByAuthor: (limit, author) => {
+        return quotes.find({author: author}, {limit: limit}).then(callback => callback);
+    },
+
+    getQuotesByDefaultLanguage: (limit, language) => {
+        return quotes.find({defaultLanguage: language}, {limit: limit}).then(callback => callback);
+    },
+
+    updateQuote: (id, lang, quote) => {
         //TODO updateQuotes
+    },
+
+    addLanguage: (id, quoteTranslation) => {
+
+    },
+
+    removeLanguage: (id, Translation) => {
+
+    },
+
+    Quote: (author, properties, translation) => {
+        return {author: author, translations: translation , properties: properties}
+    },
+
+    quoteProperties: (defaultLanguage, categories, origin, context) => {
+        return {defaultLanguage: defaultLanguage, categories: categories, origin: origin, context: context};
+    }, 
+    
+    quoteTranslation: (language, quote) => {
+        return {language: language, quote: quote}
     }
 }
 

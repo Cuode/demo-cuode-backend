@@ -42,3 +42,28 @@ module.exports.user = {
     }
 } 
 
+module.exports.quotes = {
+    addQuote: async() => {
+
+    },
+
+    removeQuote: async() => {
+
+    },
+
+}
+
+module.exports.confirm = async(question) =>{
+    let sure = false;
+    await new Promise((resolve, reject) => {
+         rl.question('Are you sure, ' + question, (callback) =>{
+            if(callback.toString().toLowerCase().trim() === 'yes' || callback.toString().toLowerCase().trim() === 'y'){
+                sure = true;
+            }
+            resolve()
+        });
+    });
+
+    return sure;
+}
+
