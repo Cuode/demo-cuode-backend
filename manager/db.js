@@ -148,8 +148,10 @@ module.exports.quotes = {
         return await quotes.find({id: parseInt(id)}).then(callback => callback);
     },
 
-    addQuote: (Quote) => {
-
+    addQuote: async(Quote) => {
+        return await quotes.insert(Quote).then(callback => {
+            return callback;
+        });
     },
 
     deleteQuote: async(id) => {
@@ -164,11 +166,11 @@ module.exports.quotes = {
         });
     },
 
-    getQuotes: (limit) => {
+    getQuotes: async(limit) => {
         if(limit == undefined) {
             limit = 100;
         }
-        return quotes.find({}, {limit: limit}).then(callback => callback);
+        return await quotes.find({}, {limit: limit}).then(callback => callback)
     },
 
     getQuotesByAuthor: (limit, author) => {
@@ -179,20 +181,64 @@ module.exports.quotes = {
         return quotes.find({defaultLanguage: language}, {limit: limit}).then(callback => callback);
     },
 
-    updateQuote: (id, lang, quote) => {
-        //TODO updateQuotes
+    updateQuote: async(id, Translation) => {
+        const quote = await this.quotes.getQuoteByID(id);
+        if(quote == null){
+            return false;
+        }
+
+        const translations = quote.translations;
+        const languageName = Obeject.keys(Translation);
+        translations[Object.keys(languageName)] = Translation[languageName]
+
+        await quotes.findOneAndUpdate({id: id}, {$set, translations: translations}).then(callback => {
+            if(callback == quote){
+                return false;
+            } else {
+                return true;
+            }
+        })
     },
 
-    addLanguage: (id, quoteTranslation) => {
+    addLanguage: async(id, quoteTranslation) => {
+        const quote = await this.quotes.getQuoteByID(id);
+        if(quote == null){
+            return false;
+        }
 
+        const translations = quote.translations;
+        const languageName = Obeject.keys(quoteTranslation);
+        translations[Object.keys(languageName)] = quoteTranslation[languageName]
+
+        await quotes.findOneAndUpdate({id: id}, {$set, translations: translations}).then(callback => {
+            if(callback == quote){
+                return false;
+            } else {
+                return true;
+            }
+        })
     },
 
-    removeLanguage: (id, Translation) => {
+    removeLanguage: async(id, Translation) => {
+        const quote = await this.quotes.getQuoteByID(id);
+        if(quote == null){
+            return false;
+        }
 
+        const translations = quote.translations;
+        translations[Translation] = null;
+
+        await quotes.findOneAndUpdate({id: id}, {$set, translations: translations}).then(callback => {
+            if(callback == quote){
+                return false;
+            } else {
+                return true;
+            }
+        })
     },
 
-    Quote: (author, properties, translation) => {
-        return {author: author, translations: translation , properties: properties}
+    Quote: (id, author, properties, translation) => {
+        return {id: id, author: author, translations: translation , properties: properties}
     },
 
     quoteProperties: (defaultLanguage, categories, origin, context) => {
@@ -200,7 +246,7 @@ module.exports.quotes = {
     }, 
     
     quoteTranslation: (language, quote) => {
-        return {language: language, quote: quote}
+        return {[language]: quote}
     }
 }
 
