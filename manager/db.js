@@ -145,7 +145,7 @@ module.exports.user = {
 module.exports.quotes = {
 
     getQuoteByID: async(id) => {
-        return await quotes.find({id: parseInt(id)}).then(callback => callback);
+        return await quotes.findOne({id: parseInt(id)}).then(callback => callback);
     },
 
     addQuote: async(Quote) => {
@@ -161,7 +161,7 @@ module.exports.quotes = {
     },
 
     getLanguages: async(id) => {
-        return await quotes.find({id: parseInt(id)}).then(callback => {
+        return await quotes.findOne({id: parseInt(id)}).then(callback => {
             return Object.keys(callback.translations);
         });
     },
@@ -207,16 +207,9 @@ module.exports.quotes = {
         }
 
         const translations = quote.translations;
-        const languageName = Obeject.keys(quoteTranslation);
-        translations[Object.keys(languageName)] = quoteTranslation[languageName]
-
-        await quotes.findOneAndUpdate({id: id}, {$set, translations: translations}).then(callback => {
-            if(callback == quote){
-                return false;
-            } else {
-                return true;
-            }
-        })
+        const languageName = Object.keys(quoteTranslation);
+        translations[languageName] = quoteTranslation[languageName]
+        return await quotes.findOneAndUpdate({id: parseInt(id)}, {$set: {translations: translations}}).then(callback => callback);
     },
 
     removeLanguage: async(id, Translation) => {
@@ -226,15 +219,9 @@ module.exports.quotes = {
         }
 
         const translations = quote.translations;
-        translations[Translation] = null;
+        delete translations[Translation];
 
-        await quotes.findOneAndUpdate({id: id}, {$set, translations: translations}).then(callback => {
-            if(callback == quote){
-                return false;
-            } else {
-                return true;
-            }
-        })
+        return await quotes.findOneAndUpdate({id: parseInt(id)}, {$set: {translations: translations}}).then(callback => callback);
     },
 
     Quote: (id, author, properties, translation) => {

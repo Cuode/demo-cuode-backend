@@ -30,31 +30,30 @@ const rl = readline.createInterface({
 
 let send = false;
 
-module.exports.init = function() {
+module.exports.init = async() => {
+  
   if(!send){
     console.log(messages[0]);
     send = true;
   } 
-     rl.question("> ", async(input) => {
+  await new Promise((resolve, reject) => {
+    rl.question("> ", async(input) => {
         
-          //Splitting input into categories, to work with
-          var raw = input.toString().toLowerCase().trim().split(" ");
-          var command = raw[0];
-          var args = [];
-            for(i = 1; i  < raw.length; i++){
-              args.push(raw[i]);
-            }
+      //Splitting input into categories, to work with
+      var raw = input.toString().toLowerCase().trim().split(" ");
+      var command = raw[0];
+      var args = [];
+        for(i = 1; i  < raw.length; i++){
+          args.push(raw[i]);
+        }
 
-          //Checking for empty object to prevent errors
-          if(args == undefined || args == null){
-            args = [];
-          }
-
-          //Handling the input
-          await InputCycle(command.toString().toLowerCase(), args).then((callback) => {
-            this.init()
-          });
-      });  
+      //Handling the input
+      await InputCycle(command.toString().toLowerCase(), args);
+      resolve();
+    });  
+  }).then(callback => {
+    this.init();
+  });
       
 };
 
@@ -93,42 +92,33 @@ async function InputCycle(command, args) {
     } else if(args.length > 0 && args.length <= 4){
       if(command == "user"){
       let first = args[0];
+          
+          if(first == "add"){
+              if(args.length == 1){
+                console.log(color.blue("> Adding new User to Database, please follow instructions:"));            
+                const newuser = await questions.user.insertUser();
 
-        // For testing purposes.
-      // if(first == "test"){
-      //   const users = await questions.quotes.addQuote();
+                if(await database.user.getUserByEmail(newuser.email).then(callback => callback != null)){
+                    console.log(color.red("> This Email-Address is already in use! (" + newuser.email + ")"));
+                    return false;
+                } 
+      
+                await database.user.addUser(database.user.User(newuser.name, newuser.email)).then(callback => {
+                    console.log(color.green(`> ${callback.name} is now part of the Database!`));
+                    console.log(color.cyan(">> Email: ") + callback.email);
+                    console.log(color.cyan(">> ID: ") + callback.id);
+                    console.log(" ");
+                });
 
-      //   if(users == null){
-      //     return false;
-      //   }
-
-      //   console.log(users);
-
-      // } else 
-      if(first == "add"){
-          if(args.length == 1){
-            console.log(color.blue("> Adding new User to Database, please follow instructions:"));            
-            const newuser = await questions.user.insertUser();
-
-            if(await database.user.getUserByEmail(newuser.email).then(callback => callback != null)){
-                console.log(color.red("> This Email-Address is already in use! (" + newuser.email + ")"));
-                return false;
-            } 
-  
-            await database.user.addUser(database.user.User(newuser.name, newuser.email)).then(callback => {
-                console.log(color.green(`> ${callback.name} is now part of the Database!`));
-                console.log(color.cyan(">> Email: ") + callback.email);
-                console.log(color.cyan(">> ID: ") + callback.id);
-                console.log(" ");
-            });
-
-          } else {
-            sendHelp(command);
-          }
+              } else {
+                sendHelp(command);
+              }
 
 
         } else if(first == "remove"){
-              if(args.length == 1){
+              
+          
+            if(args.length == 1){
                 const email = await questions.user.removeUser();
                 const user = await database.user.getUserByEmail(email);
 
@@ -150,6 +140,8 @@ async function InputCycle(command, args) {
 
 
         } else if(first == "list"){
+            
+          
             if(args.length == 1){
               let count = 0;
               const callback = database.user.listUsers();
@@ -173,6 +165,8 @@ async function InputCycle(command, args) {
             }
 
         } else if(first == "-info"){
+          
+          
           if(args.length == 3){
               let two = args[1];
               if(two == "--id"){
@@ -192,10 +186,13 @@ async function InputCycle(command, args) {
                 }
 
               } else if(args.length == 4){
+                
+                
                 let two = args[1];
                 let three = args[2];
                   if(two == "--id" && three == "--auth"){
                     
+
                     let id = args[3];
                     const user = await database.user.getUserByID(id);
                     printUserAuth(user);
@@ -206,6 +203,8 @@ async function InputCycle(command, args) {
                     let user = await database.user.getUserByEmail(email);
                     printUserAuth(user);
                     
+                
+                
                   } else {
                     sendHelp(command);
                   }
@@ -224,81 +223,155 @@ async function InputCycle(command, args) {
             
             console.log(data);
 
-          } else if(first == "add"){
-            if(args.length == 2){
+          } else if(first == "quote"){
+            if(args.length >= 2 && args.length <= 3){
               switch(args[1]){
-                case "quote":
+               
+              // EVERYTHING WITH ADD
+               case "add":
+                 if(args.length != 2) sendHelp(command);
+
                   console.log(color.blue('> Adding new Quote to the Database!'));
                   const newquote = await questions.quotes.addQuote();
                   const properties = database.quotes.quoteProperties(newquote.defaultLanguage, newquote.categories, newquote.origin, newquote.context);
                   const defaultTranslation = database.quotes.quoteTranslation(newquote.defaultLanguage, newquote.quote);
                   const Quote = database.quotes.Quote(random.toHash(defaultTranslation[Object.keys(defaultTranslation)]), newquote.author, properties, defaultTranslation);
 
+                  if(await database.quotes.getQuoteByID(Quote.id).then(callback => {
+                    if(callback != null){
+                      console.log(color.red('> An Quote with the same ID already Exists! \n') + color.yellow('> Please check of they are the same: '));
+                      console.log(color.cyan('> ID: ') + callback.id);
+                      console.log(color.cyan('> Quote: ') + callback.translations[callback.properties.defaultLanguage]);
+                      console.log(color.green('> If they are not the same, please contact an Admin!'));
+                      return true;
+                    } else {
+                      return false;
+                    }
+                  })){
+                    return false;
+                  }
+
                   await database.quotes.addQuote(Quote).then(callback => {
                     console.log(color.cyanBright(`> The entry ${callback.id} has been added.`));
                     console.log(color.cyan(`>> Quote: `) + callback.translations[callback.properties.defaultLanguage]);
                     console.log(color.cyan(`>> Author: `) + callback.author);
                   });
-
                   break;
+
+                case "addt":
+                  if(args.length != 2) sendHelp(command);
+
+                  console.log(color.blue("> Adding new Language to a existing Quote!"));
+                  const newTranslation = await questions.quotes.addTranslation();
+
+                  if(await database.quotes.getQuoteByID(newTranslation.id).then(callback => callback == null)){
+                    console.log('> No Quote with that ID could be found!');
+                    return false;
+                  }
+
+
+                   await database.quotes.addLanguage(newTranslation.id, database.quotes.quoteTranslation(newTranslation.language, newTranslation.quote)).then(callback => { 
+                     console.log(color.cyanBright("> ID: ") + callback.id);
+                     console.log(color.cyanBright('> Quote in ' + newTranslation.language + ': ') + newTranslation.quote);
+                     console.log(color.cyanBright('> The Translation ') + newTranslation.language + color.cyanBright(" has successfully been added!"));
+                  });
+                
+                  break;
+
+                  //EVERYTHING WITH REMOVE
+                  case "remove":
+                      if(args.length != 2) sendHelp(command);
+
+                      let id = await questions.quotes.removeQuote();
+                      if(await database.quotes.getQuoteByID(id) == null){
+                        console.log(color.red("> There is no Entry with the ID: ") + id);
+                        return false;
+                      }
+                      await database.quotes.deleteQuote(id).then((callback) => {
+                          console.log(color.green('> The Entry with the ID ' + color.white(id) + " has been successfully deleted!"));
+                      }).catch(function(err){
+                        console.log(err);
+                      });
+                  break;
+
+                case "removet": {
+                      if(args.length != 2) sendHelp(command);
+                      
+                      const removeTranslation = await questions.quotes.removeTranslation();
+                      const quote = await database.quotes.getQuoteByID(removeTranslation.id);
+
+                      if(quote == null){
+                        console.log(color.red('> There is no Quote with this ID!'));
+                      }
+
+                      const translations = await database.quotes.getLanguages(removeTranslation.id);
+
+                      if(!translations.includes(removeTranslation.language)){
+                        console.log(color.red('> This Quote does not have this Translation (' + removeTranslation.language + ')'))
+                        return false;
+                      }
+
+                      await database.quotes.removeLanguage(removeTranslation.id, removeTranslation.language).then(callback => {
+                        console.log(color.green('> The Translation (' + removeTranslation.language + ") has successfully been removed from " + removeTranslation.id + ' (' + quote.translations[quote.properties.defaultLanguage] + ")"));
+                      })
+                    }
+                  break;
+
+                  //EVERYTHING WITH LIST
+                  case "list":
+                    let count = 0;
+                    const quote = await database.quotes.getQuotes(200);
+                    for(i = 0; i < quote.length; i++){
+                      count++;
+
+                      console.log(" ");
+                      console.log(color.cyanBright("> ") + count + color.cyanBright(" - ID: ") + quote[i].id);
+                      console.log(color.cyanBright(">> Quote: ") + quote[i].translations[quote[i].properties.defaultLanguage] + color.cyanBright(" | Author: ") + 
+                        quote[i].author + color.cyanBright(" | Translations: ") + 
+                        (Object.keys(quote[i].translations).length < 5 ? Object.keys(quote[i].translations).join(', ') : Object.keys(quote[i].translations).length));
+                      //console.log(color.cyanBright(">> Author: ") + (quote[i].author != null ? quote[i].author : "Unkown"));
+                      //console.log(color.cyanBright('>> Categories: ') + (quote[i].properties.categories.length > 0 ? quote[i].properties.categories.join(', ').toUpperCase() : []));
+                      //console.log(color.cyanBright(">> Default Language: ") + quote[i].properties.defaultLanguage);
+                      //console.log(color.cyanBright(">> Translations: ") + Object.keys(quote[i].translations).join(', '));
+                    };
+                    console.log(color.green("\n> There are currently " + count + " Quotes in your Database!"));
+                    break;
+
+                  case "info": {
+                    if(args.length != 2) sendHelp(command);
+
+                    let id = await questions.quotes.askForID();
+                    const quote = await database.quotes.getQuoteByID(id).then(callback => callback);
+
+                    if(quote == null){
+                      console.log(color.red("> There is no Quote with the ID: ") + id);
+                      return false;
+                    }
+                    console.log(" ");
+                    console.log(color.cyanBright("> ID: ") + quote.id);
+                    console.log(color.cyanBright(">> Quote: ") + quote.translations[quote.properties.defaultLanguage]);
+                    console.log(color.cyanBright(">> Author: ") + (quote.author != null ? quote.author : "Unkown"));
+                    console.log(color.cyanBright('>> Categories: ') + (quote.properties.categories.length > 0 ? quote.properties.categories.join(', ').toUpperCase() : []));
+                    console.log(color.cyanBright(">> Default Language: ") + quote.properties.defaultLanguage);
+                    console.log(color.cyanBright(">> Translations: ") + Object.keys(quote.translations).join(', '));
+                    Object.keys(quote.translations).forEach(callback => {
+                        if(callback != quote.properties.defaultLanguage){
+                          console.log(color.green(' > ' + callback + ": ") + quote.translations[callback]);
+                        }
+                    })
+                    console.log(" ");
+                    break;
+                  }
                   default:
                     sendHelp(command);
                 }
               } else {
                 sendHelp(command);
               }
-            } else if(first == "remove"){
-             if(args.length == 2){
-              switch(args[1]){
-                case "quote":
-                  const id = await questions.quotes.removeQuote();
-                  
-                  if(await database.quotes.getQuoteByID(id) == null){
-                    console.log(color.red("> There is no Entry with the ID: ") + id);
-                    return false;
-                  }
-                  await database.quotes.deleteQuote(id).then((callback) => {
-                      console.log(color.green('> The Entry with the ID ' + color.white(id) + " has been successfully deleted!"));
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-
-                  break;
-                  default:
-
-              }
-            } else {
-              sendHelp(command);
-            }
-            } else if(first == "list"){
-              if(args.length == 2){
-                switch(args[1]){
-                  case "quote":
-                    let count = 0;
-                    const quote = await database.quotes.getQuotes(100);
-                    for(i = 0; i < quote.length; i++){
-                      count++;
-                      console.log(" ");
-                      console.log(color.cyanBright("> ") + count + color.cyanBright(" - ID: ") + quote[i].id);
-                      console.log(color.cyanBright(">> Quote: ") + quote[i].translations[quote[i].properties.defaultLanguage]);
-                      console.log(color.cyanBright(">> Author: ") + (quote[i].author != null ? quote[i].author : "Unkown"));
-                      console.log(color.cyanBright(">> Default Language: ") + quote[i].properties.defaultLanguage);
-                      console.log(color.cyanBright(">> Translations: ") + Object.keys(quote[i].translations));
-                    };
-                    console.log(color.green("\n> There are currently " + count + " Quotes in your Database!"));
-                    break;
-                    default:
-                      sendHelp(command);    
-                    }
-              } else {
-                sendHelp(command)
-              }
-            } else if(first == "update"){
-
-            
           } else {
             sendHelp(command);
           }
+
       } else if(command == "help"){
           sendHelp(command);
       }
@@ -326,7 +399,7 @@ function sendHelp(command) {
       console.log(color.yellow(">> User: add/remove/list/[-info] [--email/--id]"));
       return true;
     case "data":
-      console.log(color.yellow(">> Data: add/remove/list quote/first/last/sentence"));
+      console.log(color.yellow(">> Data: add/remove/list/ quote/first/last/sentence [addLanguage/removeLanguage"));
       return true;
       default:
         console.log(color.yellow(">> User: add/remove/list/[-info] [--email/--id]"));
