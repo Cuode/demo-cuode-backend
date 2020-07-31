@@ -27,12 +27,13 @@ app.get("/", (req, res) => {
     })
 })
 
-app.post('/mobile_app/authenticate', (req, res) => {
 
+app.post('/mobile_app/authenticate/:token', (req, res) => {
+    console.log(req.params.id);
 })
 
 //Makes this whole shit available
-app.listen(7810, () => {
+app.listen(8000, () => {
     console.log(chalk.yellowBright("Demo-Backend Started - Wating for requests..."));
     database.init();
     input.init();

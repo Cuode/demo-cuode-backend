@@ -1,52 +1,5 @@
 const readline = require("readline");
 const chalk = require("chalk");
-const inputclass = require('../input');
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false,
-});
-
-
-module.exports.user = {
-  insertUser: async () => {
-    let user = {};
-    await new Promise((resolve, reject) => {
-      rl.question(chalk.yellow(">> Please enter the email: "), (callback) => {
-            user.email = callback;
-            resolve();
-      });
-    });
-
-    await new Promise((resolve, reject) => {
-      rl.question(chalk.yellow(">> Please enter the name: "), (callback) => {
-        user.name = callback;
-        resolve();
-      });
-    });
-
-    return user;
-  },
-
-  removeUser: async () => {
-    let email = undefined;
-
-    await new Promise((resolve, reject) => {
-      rl.question(
-        chalk.yellow(
-          ">> Please enter the email of the account you want to delete: "
-        ),
-        (callback) => {
-          email = callback;
-          resolve();
-        }
-      );
-    });
-
-    return email;
-  },
-};
 
 const languages = [
   "english",
@@ -71,100 +24,52 @@ const languages = [
   "spanish"
 ];
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false,
+});
+
+
+module.exports.user = {
+  insertUser: async () => {
+    let user = {};
+
+    user.email = await askQuestion('Please enter the email: ', true, ['@'], "all").then(callback => callback.toLowerCase());
+    user.name = await askQuestion('Please enter the name: ', false, undefined);
+
+    return user;
+  },
+
+  removeUser: async () => {
+    return await askQuestion("Please enter the email of the account you want to delete: ", true, ['@'], "all").then(callback => callback.toLowerCase());
+  },
+};
+
+
 module.exports.quotes = {
     askForID: async() => {
-        let id = undefined;
-
-        await new Promise((resolve, reject) => {
-            rl.question(chalk.blue('> Please enter the ID of the Quote: '), input => {
-                input = input.toString().toLowerCase().trim();
-                
-                if(input && input != ''){
-                    id = input;
-                }
-
-                resolve();
-            })
-        });
-
-        return id;
+        return await askQuestion("Please enter the ID of the Quote: ", false).then(callback => parseInt(callback.toLowerCase()));
     },
   
    addQuote: async () => {
     let Quote = {};
 
     // Asking for Quote
-    await new Promise((resolve, reject) => {
-      rl.question(chalk.blueBright(">> Please enter the Quote: "), (input) => {
-        if (input && input.toString().toLowerCase().trim() != "") {
-          Quote.quote = input.toString().trim();
-          resolve();
-        } else {
-          Quote = false;
-          rejcet();
-        }
-      });
-    });
+      Quote.quote = await askQuestion("Please enter the Quote: ", false);
 
     // Asking for the Language
-    const language = async () =>
-      await new Promise((resolve, reject) => {
-        rl.question(
-          chalk.blueBright(
-            ">> Please enter the default Language (in english, like: english, german, spanish, dutch): "
-          ),
-          async (input) => {
-            if (
-              input &&
-              input.toString().toLowerCase().trim() != "" &&
-              languages.includes(input.toString().toLowerCase().trim())
-            ) {
-              Quote.defaultLanguage = input.toString().toLowerCase().trim();
-              resolve();
-            } else {
-              console.log(
-                chalk.red(
-                  ">> ERROR << - There went something wrong with your input, please try again!"
-                )
-              );
-              await language();
-              resolve();
-            }
-          }
-        );
-      });
 
-    await language();
+      Quote.defaultLanguage = await askQuestion("Please enter the default Language (in english, like: english, german, spanish, dutch): ", true, languages, "one").then(callback => callback.toLowerCase());
 
     // Asking for origin
 
-    if (
-      await this.confirm(
-        chalk.blueBright(
+    if (await this.confirm(chalk.blueBright(
           ">> Do you know any origin of the Quote? \n> Type y(es) to confirm. Other answers are declined! \n>> "
         )
       )
     ) {
-      await new Promise((resolve, reject) => {
-        rl.question(
-          chalk.blueBright(
-            ">> Enter the origin. Either in a Word or a Sentence! \n>> "
-          ),
-          (input) => {
-            if (input && input.toString().toLowerCase().trim() != "") {
-              Quote.origin = input
-                .toString()
-                .toLowerCase()
-                .replace(/  +/g, " ")
-                .trim();
-              resolve();
-            } else {
-              console.log(chalk.red(">> No Origin found.. \n > Continueing"));
-              resolve();
-            }
-          }
-        );
-      });
+      Quote.origin = await askQuestion("Enter the origin. Either in a Word or a Sentence! \n>> ", false).then(callback => { if(callback == false){ return []} });
     } else {
       Quote.origin = [];
     }
@@ -214,22 +119,7 @@ module.exports.quotes = {
         )
       )
     ) {
-      await new Promise((resolve, reject) => {
-        rl.question(
-          chalk.blueBright(
-            ">> Enter the Context. Either in a Word or a Sentence! \n>> "
-          ),
-          (input) => {
-            if (input && input.toString().toLowerCase().trim() != "") {
-              Quote.context = input.toString().replace(/  +/g, " ").trim();
-              resolve();
-            } else {
-              console.log(chalk.red(">> No Context found.. \n > Continueing"));
-              resolve();
-            }
-          }
-        );
-      });
+      Quote.context = await askQuestion("Enter the Context. Either in a Word or a Sentence! \n>> ", false);
     } else {
       Quote.context = [];
     }
@@ -242,20 +132,7 @@ module.exports.quotes = {
         )
       )
     ) {
-      await new Promise((resolve, reject) => {
-        rl.question(
-          chalk.blueBright(">> Enter the Autor`s full Name. \n>> "),
-          (input) => {
-            if (input && input.toString().toLowerCase().trim() != "") {
-              Quote.author = input.replace(/  +/g, " ").toString().trim();
-              resolve();
-            } else {
-              console.log(chalk.red(">> No Author found.. \n > Continueing"));
-              resolve();
-            }
-          }
-        );
-      });
+      Quote.author = await askQuestion(">> Enter the Autor`s full Name. \n>> ", false);
     }
 
     return Quote;
@@ -265,43 +142,11 @@ module.exports.quotes = {
   addTranslation: async() => {
     let translation = {};
 
-        await new Promise((resolve, reject) => {
-            rl.question(chalk.yellow('> Please enter the ID of the Quote, you want to update: '), input => {
-                if(input && input.toString().toLowerCase().trim() != ''){
-                    translation.id = parseInt(input);
-                } else {
-                    translation = false;
-                }
-                resolve();
-            });
-        });
+        translation.id = await askQuestion("Please enter the ID of the Quote, you want to update: ", false).then(callback => parseInt(callback.toLowerCase()));
 
-        const language = async() => await new Promise((resolve, reject) =>{
-            rl.question(chalk.yellow('> Please enter the Language from the Translation: '), async(input) => {
-                if(input && input.toString().toLowerCase().trim() != '' && languages.includes(input.toString().toLowerCase().trim())){
-                    translation.language = input.toString().toLowerCase();
-                    resolve();
-                } else {
-                    console.log(chalk.red(">> ERROR << - There happend an Error with your input!"));
-                    await language();
-                    resolve();
-                }
-                
-            });
-        });
-        await language();
+        translation.language = await askQuestion("Please enter the default Language (in english, like: english, german, spanish, dutch): ", true, languages, "one").then(callback => callback.toLowerCase());
 
-        await new Promise((resolve, reject) => {
-            rl.question(chalk.yellow('> Please enter the Quote-Translation: '), input => {
-                if(input && input.toString().toLowerCase().trim() != ''){
-                    translation.quote = input;
-                } else {
-                    translation = false;
-                }
-
-                resolve();
-            });
-        })
+        translation.quote = await askQuestion("Please enter the Quote-Translation: ");
 
         return translation;
   },
@@ -309,19 +154,7 @@ module.exports.quotes = {
   removeQuote: async () => {
     let id = undefined;
 
-    await new Promise((resolve, reject) => {
-      rl.question(
-        chalk.blueBright(">> Enter the ID of the Quote you want to delete: "),
-        (input) => {
-          if (input && input.toString().toLowerCase().trim() != "") {
-            id = parseInt(input);
-            resolve();
-          } else {
-            reject();
-          }
-        }
-      );
-    });
+    id = await askQuestion("Enter the ID of the Quote you want to delete: ");
 
     if (
       await this.confirm(
@@ -346,33 +179,27 @@ module.exports.quotes = {
   removeTranslation: async() =>{
     let translation = {};
 
-        await new Promise((resolve, reject) => {
-            rl.question(chalk.yellow('> Please enter the ID of the Quote: '), input => {
-                if(input && input.toString().toLowerCase().trim() != ''){
-                    translation.id = input.toString().toLowerCase().trim();
-                } else {
-                    translation = false;
-                }
-                resolve();
-            });
-        });
+        translation.id = await askQuestion("Please enter the ID of the Quote: ", false);
+        translation.language = await askQuestion("Please enter the default Language (in english, like: english, german, spanish, dutch): ", true, languages, "one").then(callback => callback.toLowerCase());
 
-        const language = async() => await new Promise((resolve, reject) =>{
-            rl.question(chalk.yellow('> Please enter the Language from the Translation: '), async(input) => {
-                if(input && input.toString().toLowerCase().trim() != '' && languages.includes(input.toString().toLowerCase().trim())){
-                    translation.language = input.toString().toLowerCase();
-                    resolve();
-                } else {
-                    console.log(chalk.red(">> ERROR << - There happend an Error with your input!"));
-                    await language();
-                    resolve();
-                }
-                
-            });
-        });
-        await language();
-
-        return translation;
+        if (
+          await this.confirm(
+            chalk.red(">> Are you sure you want to delete the " + translation.language + " Translation of " + translation.id + "?") +
+              chalk.green(
+                "\n > Type y(es) to confirm. Any other anwer will be decilined."
+              ) +
+              " \n> "
+          )
+        ) {
+          return translation;
+        } else {
+          console.log(
+            chalk.red(">> Mission aborted!") +
+              " - " +
+              chalk.green(`${id} has been saved!`)
+          );
+          return false;
+        }
   },
 };
 
@@ -392,6 +219,73 @@ module.exports.confirm = async (question) => {
 
   return sure;
 };
+
+
+
+/**
+ * Checks for Characters that have to be in the input of the user.
+ * @param {*} target 
+ * @param {*} chars 
+ */
+function includeChars(target, chars, propertie){
+  let call = undefined;
+  switch(propertie.toLowerCase()){  
+    
+    case "all":
+    default:
+
+    call = true;
+
+    chars.forEach((callback, index) => {
+      if(!target.toLowerCase().includes(callback.toLowerCase())){
+        call = false;
+      }
+    });
+    break;
+    
+
+    case "one":
+
+    call = false;
+
+      chars.forEach((callback, index) => {
+        if(target.toLowerCase().includes(callback.toLowerCase())){
+          call = true;
+        }
+      });
+
+    break;
+  }
+    return call;
+}
+
+/**
+ * Asks the question and returns the Input.
+ * @param {*} question 
+ * @param {*} repeat 
+ * @param {*} includes 
+ */
+async function askQuestion(question, repeat, includes, propertie){
+  await new Promise((resolve, reject) => {
+    rl.question(">> " + chalk.yellow(question), async(input) => {
+      input = input.toString().replace(/  +/g, " ").trim();
+      if(input && input != '' && (includes !== undefined && includes.length > 0 && propertie !== undefined) ? (includeChars(input, includes, propertie)) : true){
+        callback = input;
+      } else {
+        if(repeat !== undefined && repeat == true){
+          console.log(chalk.red(' > Error with your input, please try again!'));
+          await askQuestion(question, repeat);
+        }
+        callback = false;
+      }
+
+      resolve();
+
+    })
+  });
+  return callback;
+}
+
 
 /**
  * HOW THE FUCK DO I CANCEL SOMETHING LIKE THIS?! (See entire class lul);

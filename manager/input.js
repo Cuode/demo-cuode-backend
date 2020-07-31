@@ -187,7 +187,6 @@ async function InputCycle(command, args) {
 
               } else if(args.length == 4){
                 
-                
                 let two = args[1];
                 let three = args[2];
                   if(two == "--id" && three == "--auth"){
@@ -258,7 +257,7 @@ async function InputCycle(command, args) {
                   });
                   break;
 
-                case "addt":
+                case "addtrans":
                   if(args.length != 2) sendHelp(command);
 
                   console.log(color.blue("> Adding new Language to a existing Quote!"));
@@ -294,7 +293,7 @@ async function InputCycle(command, args) {
                       });
                   break;
 
-                case "removet": {
+                case "remtrans": {
                       if(args.length != 2) sendHelp(command);
                       
                       const removeTranslation = await questions.quotes.removeTranslation();
