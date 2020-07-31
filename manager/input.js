@@ -361,6 +361,13 @@ async function InputCycle(command, args) {
                     console.log(" ");
                     break;
                   }
+
+                  case "update":
+                    if(args.length != 2) sendHelp(command);
+                    
+                    let update = await questions.quotes.update();
+
+                    break;
                   default:
                     sendHelp(command);
                 }

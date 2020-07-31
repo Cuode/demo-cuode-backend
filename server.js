@@ -17,10 +17,9 @@ app.use(cors()); //Makes requests available
 app.use(express.json()) //Allows the use of json for communication
 
 
-
 //Incoming requests and their treatment
 app.get("/", (req, res) => {
-    res.json({
+   res.json({
         status: 400,
         message: "Bad Request",
         note: "/ is not defined for usage"
@@ -29,7 +28,7 @@ app.get("/", (req, res) => {
 
 
 app.post('/mobile_app/authenticate/:token', (req, res) => {
-    console.log(req.params.id);
+    console.log(req.params.token);
 })
 
 //Makes this whole shit available

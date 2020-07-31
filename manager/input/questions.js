@@ -1,5 +1,6 @@
 const readline = require("readline");
 const chalk = require("chalk");
+const { fetchAsyncQuestionPropertyQuestionProperty } = require("inquirer/lib/utils/utils");
 
 const languages = [
   "english",
@@ -201,6 +202,57 @@ module.exports.quotes = {
           return false;
         }
   },
+
+  update: async() => {
+    let update = {};
+    update.id = await askQuestion('Please enter the ID of the Quote: ', false);
+    update.type = await askQuestion('Please enter the type of your update: \n > 1. Quote (Translation)\n > 2. Author (Fullname)\n > 3. Properties (defaultLanguage, Categories, Origin, Context)', true, ['1', '2', '3'], "one").then(callback => {
+      switch(callback.toLowerCase()){
+        case "1":
+          return "quote";
+        case "2":
+          return "author";
+        case "3":
+          return "properties";
+        default:
+          return "cheater";
+      }
+    });
+
+    if(update.type == "properties"){
+      update.type = await askQuestion('You chose Properties, which propertie do you want to edit?\n > 1. defaultLanguage\n > 2. Categories\n > 3. Origin\n > 4. Context', true, ['1', '2', '3', '4'], "one").then(callback => {
+        switch(callback.toLowerCase()){
+          case "1":
+            return "defaultlanguage";
+          case "2":
+            return "categories";
+          case "3":
+            return "origin";
+          case "4":
+            return "context";
+        }
+      });
+    }
+
+    if(update.type == "categories"){
+      update.edit = await askQuestion('You chose to Edit an Array. Do you want either:\n > 1. To edit all of them\n > 2. Just add\n > 3. Just Delete', true, ['1', '2', '3'], "one").then(callback => {
+        switch(callback.toLowerCase()){
+          case "1":
+            return "all";
+          case "2":
+            return "add";
+          case "3":
+            return "remove";
+        }
+      });
+    }
+
+
+    /**
+     * CONTINUING HERE TOMORROW :^)
+     */
+
+  }
 };
 
 module.exports.confirm = async (question) => {
