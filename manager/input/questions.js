@@ -1,6 +1,5 @@
 const readline = require("readline");
 const chalk = require("chalk");
-const { fetchAsyncQuestionPropertyQuestionProperty } = require("inquirer/lib/utils/utils");
 
 const languages = [
   "english",
